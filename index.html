@@ -1,0 +1,506 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Бюро Хитхоут</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Unbounded:wght@700;900&display=swap" rel="stylesheet">
+<style>
+/* Layout concept: one playful single-column game, each task has its own saturated colour field; white cards with hard ink outlines and offset shadows. */
+:root{
+  --ink:#1B1340;
+  --white:#FFFFFF;
+  --purple:#6C2BD9;
+  --yellow:#FFD23F;
+  --pink:#FF5C8A;
+  --blue:#3D5AFE;
+  --green:#2EE59D;
+  --orange:#FF7A1A;
+  --soft:#F3EEFF;
+  --bg:#6C2BD9;
+  --on:#FFFFFF;
+  --f-display:'Unbounded','Arial Black',Arial,sans-serif;
+  --f-body:'Manrope',system-ui,-apple-system,'Segoe UI',Arial,sans-serif;
+}
+body[data-lv="0"],body[data-lv="6"]{--bg:var(--purple);--on:#FFFFFF}
+body[data-lv="1"]{--bg:var(--yellow);--on:var(--ink)}
+body[data-lv="2"]{--bg:var(--pink);--on:var(--ink)}
+body[data-lv="3"]{--bg:var(--blue);--on:#FFFFFF}
+body[data-lv="4"]{--bg:var(--green);--on:var(--ink)}
+body[data-lv="5"]{--bg:var(--orange);--on:var(--ink)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--on);font-family:var(--f-body);font-size:18px;line-height:1.45;transition:background .35s}
+.wrap{max-width:700px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 56px;display:flex;flex-direction:column;gap:20px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.brand{font-family:var(--f-display);font-weight:900;font-size:15px;letter-spacing:1px}
+.meta{display:flex;align-items:center;gap:14px;font-weight:800;font-size:16px}
+.pips{display:flex;gap:6px}
+.pip{display:block;width:14px;height:14px;border-radius:50%;border:3px solid var(--on)}
+.pip.done{background:var(--on)}
+.pip.cur{width:26px;border-radius:999px;background:var(--on)}
+.card{background:var(--white);color:var(--ink);border:3px solid var(--ink);border-radius:28px;box-shadow:7px 7px 0 var(--ink);padding:26px;display:flex;flex-direction:column;gap:18px;min-width:0}
+.eyebrow{margin:0;font-weight:800;font-size:14px;letter-spacing:1.2px;text-transform:uppercase;color:var(--purple)}
+.count{margin:0;font-weight:700;font-size:15px;color:#5B5380}
+h1,h2{margin:0;font-family:var(--f-display);text-wrap:balance;overflow-wrap:break-word}
+h1{font-weight:900;font-size:clamp(38px,11vw,62px);line-height:1.02}
+h2{font-weight:700;font-size:clamp(22px,5.6vw,29px);line-height:1.2}
+h1:focus,h2:focus{outline:none}
+.lead{margin:0;font-size:18px}
+.hero{display:grid;grid-template-columns:minmax(0,220px) minmax(0,1fr);gap:26px;align-items:center}
+@media (max-width:560px){.hero{grid-template-columns:1fr}.polaroid{max-width:260px}}
+.polaroid{background:var(--white);border:3px solid var(--ink);padding:10px 10px 12px;transform:rotate(-3deg);box-shadow:5px 5px 0 var(--ink);margin:6px}
+.polaroid img{display:block;width:100%;height:auto;border:2px solid var(--ink)}
+.cap{font-family:var(--f-display);font-weight:700;font-size:13px;line-height:1.3;text-align:center;padding-top:10px}
+.stats{display:flex;gap:10px;flex-wrap:wrap}
+.chip{border:3px solid var(--ink);border-radius:999px;padding:6px 14px;font-weight:800;font-size:15px;background:var(--yellow)}
+.btn{font-family:var(--f-body);font-weight:800;font-size:18px;color:var(--ink);background:var(--yellow);border:3px solid var(--ink);border-radius:999px;padding:14px 24px;box-shadow:4px 4px 0 var(--ink);cursor:pointer;align-self:flex-start;transition:transform .08s,box-shadow .08s}
+.btn:hover:not(:disabled){transform:translate(-1px,-1px);box-shadow:6px 6px 0 var(--ink)}
+.btn:active:not(:disabled){transform:translate(3px,3px);box-shadow:1px 1px 0 var(--ink)}
+.btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+.btn.alt{background:var(--pink)}
+.btn.big{flex:1 1 140px;font-size:22px;padding:18px 24px;text-align:center}
+.btn.right,.opt.right{background:var(--green)}
+.btn.wrong,.opt.wrong{background:var(--pink)}
+.btn:focus-visible,.opt:focus-visible,.segb:focus-visible{outline:4px solid var(--blue);outline-offset:3px}
+.row{display:flex;gap:14px;flex-wrap:wrap}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{font-family:var(--f-body);font-weight:700;font-size:18px;color:var(--ink);background:var(--white);border:3px solid var(--ink);border-radius:18px;padding:13px 18px;text-align:left;cursor:pointer;display:flex;gap:12px;align-items:center;transition:background .12s}
+.opt:hover:not(:disabled){background:var(--soft)}
+.opt[aria-pressed="true"]{background:var(--yellow)}
+.opt:disabled{cursor:default}
+.opt .badge{flex:none;width:34px;height:34px;border-radius:50%;border:3px solid var(--ink);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;background:var(--white)}
+.fb{border:3px solid var(--ink);border-radius:20px;background:var(--soft);padding:18px 20px;display:flex;flex-direction:column;gap:14px}
+.fb p{margin:0}
+.fb strong{font-weight:800}
+.srow{border:3px solid var(--ink);border-radius:20px;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.srow p{margin:0;font-weight:700}
+.srow.ok{background:#CFFBE6}
+.srow.bad{background:#FFD3E0}
+.srow .why{font-weight:500;font-size:16px}
+.seg{display:flex;gap:8px;flex-wrap:wrap}
+.segb{font-family:var(--f-body);font-weight:800;font-size:16px;color:var(--ink);background:var(--white);border:3px solid var(--ink);border-radius:999px;padding:8px 18px;cursor:pointer}
+.segb[aria-pressed="true"]{background:var(--yellow)}
+.segb:disabled{cursor:default}
+.group{display:flex;flex-direction:column;gap:10px}
+.group h3{margin:0;font-family:var(--f-display);font-size:16px;font-weight:700}
+.shake{animation:shake .3s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.big-score{font-family:var(--f-display);font-weight:900;font-size:clamp(54px,16vw,88px);line-height:1}
+.big-score small{font-size:.35em;font-weight:700}
+.title-badge{align-self:flex-start;font-family:var(--f-display);font-weight:700;font-size:clamp(18px,4.6vw,24px);background:var(--green);border:3px solid var(--ink);border-radius:18px;padding:10px 16px;transform:rotate(-1.5deg)}
+.recap{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+.recap li{display:flex;gap:12px;align-items:baseline}
+.recap b{font-family:var(--f-display);font-size:15px;flex:none;min-width:11ch}
+.share{width:100%;min-height:112px;font-family:var(--f-body);font-size:16px;color:var(--ink);background:var(--white);border:3px solid var(--ink);border-radius:16px;padding:12px;resize:vertical}
+.src{margin:0;font-size:14px;color:#5B5380}
+.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.tile{border:3px solid var(--ink);border-radius:18px;padding:12px;background:var(--yellow);display:flex;flex-direction:column;gap:2px;min-width:0}
+.tile b{font-family:var(--f-display);font-weight:900;font-size:clamp(28px,9vw,44px);line-height:1}
+.tile span{font-size:14px;font-weight:700;line-height:1.25}
+.quote{margin:0;background:var(--ink);color:#FFFFFF;border-radius:22px;padding:22px;font-family:var(--f-display);font-weight:700;font-size:clamp(18px,4.8vw,23px);line-height:1.3;display:flex;flex-direction:column;gap:12px}
+.quote cite{font-family:var(--f-body);font-style:normal;font-weight:500;font-size:15px;line-height:1.4;color:#E6DDFB}
+.idea{border:3px solid var(--ink);border-radius:20px;padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.idea b{font-family:var(--f-display);font-size:16px;font-weight:700}
+.fact{background:var(--yellow);border:3px solid var(--ink);border-radius:18px;padding:14px 16px}
+.fact b{display:block;font-size:13px;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:4px}
+.tip{margin:0;font-weight:700;font-size:16px;background:var(--soft);border-radius:14px;padding:10px 14px}
+.nav{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+.dots{display:flex;gap:8px}
+.dot{display:block;width:12px;height:12px;border-radius:50%;border:3px solid var(--ink)}
+.dot.on{background:var(--ink)}
+.bar{flex:1 1 120px;min-width:80px;max-width:260px;height:14px;border:3px solid var(--on);border-radius:999px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--on);transition:width .3s}
+.when{margin:0;align-self:flex-start;font-family:var(--f-display);font-weight:700;font-size:15px;background:var(--ink);color:#FFFFFF;border-radius:999px;padding:8px 16px}
+a.btn{display:inline-block;text-decoration:none;text-align:center}
+.btn.ghost{background:var(--white);font-size:16px;padding:10px 18px}
+.promo{background:var(--ink);color:#FFFFFF;border-radius:22px;padding:22px;display:flex;flex-direction:column;gap:14px}
+.promo h3{margin:0;font-family:var(--f-display);font-weight:900;font-size:clamp(20px,5.4vw,26px);line-height:1.15;color:var(--yellow)}
+.promo p{margin:0;font-size:17px}
+.promo .btn{border-color:#FFFFFF;box-shadow:4px 4px 0 #FFFFFF}
+.promo .btn:hover:not(:disabled){box-shadow:6px 6px 0 #FFFFFF}
+.promo .btn:focus-visible{outline-color:var(--yellow)}
+.clips{display:flex;flex-direction:column;gap:22px;padding-top:8px}
+.clip{position:relative;margin:0;border:3px solid var(--ink);padding:22px 20px 16px;display:flex;flex-direction:column;gap:10px;box-shadow:5px 5px 0 var(--ink);background:#FFF3B0}
+.clip:nth-child(odd){transform:rotate(-1deg)}
+.clip:nth-child(even){transform:rotate(1deg);background:#FFD6E5}
+.clip:nth-child(3n){background:#D5E3FF}
+.clip::before{content:"";position:absolute;top:-14px;left:50%;width:84px;height:26px;margin-left:-42px;background:rgba(108,43,217,.4);transform:rotate(-3deg)}
+.clip q{quotes:none;font-family:var(--f-display);font-weight:700;font-size:clamp(17px,4.6vw,21px);line-height:1.3;overflow-wrap:break-word}
+.clip cite{font-style:normal;font-weight:700;font-size:14px;color:#4A4170}
+.clip .note{margin:0;font-size:15px;font-weight:600}
+.more{display:flex;flex-direction:column;gap:10px;border:3px solid var(--ink);border-radius:18px;padding:14px 16px;background:var(--white)}
+.more b,.use b{display:block;font-size:13px;letter-spacing:1.2px;text-transform:uppercase}
+.more p{margin:0;font-size:17px}
+.use{background:var(--green);border:3px solid var(--ink);border-radius:18px;padding:12px 16px;font-weight:700;font-size:16px}
+.card{overflow:hidden}
+.choose{margin:6px 0 0;font-family:var(--f-display);font-weight:900;font-size:clamp(20px,5.4vw,26px);line-height:1.15}
+.picks{display:flex;flex-direction:column;gap:14px}
+.pick{font-family:var(--f-body);text-align:left;color:var(--ink);border:3px solid var(--ink);border-radius:22px;padding:16px 18px;box-shadow:5px 5px 0 var(--ink);cursor:pointer;display:flex;flex-direction:column;gap:6px;transition:transform .12s,box-shadow .12s}
+.pick.p1{background:var(--yellow)}
+.pick.p2{background:var(--green)}
+.pick b{font-family:var(--f-display);font-weight:900;font-size:clamp(18px,4.8vw,22px);line-height:1.15}
+.pick span{font-weight:700;font-size:16px;line-height:1.35}
+.pick:hover{transform:translate(-1px,-1px);box-shadow:7px 7px 0 var(--ink)}
+.pick:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--ink)}
+.pick:focus-visible{outline:4px solid var(--blue);outline-offset:3px}
+.mot{margin:0;font-weight:800;font-size:15px;color:var(--purple)}
+.hint{border:3px dashed var(--ink);border-radius:16px;padding:10px 14px;background:var(--soft);font-weight:700;font-size:16px}
+.hint b{display:block;font-size:13px;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:2px}
+.praise{margin:0;font-weight:800;font-size:18px}
+.cnt{margin:0;font-size:13px;font-weight:600;color:#7A7299;text-align:center}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top" id="top" hidden>
+    <div class="brand">БЮРО ХИТХОУТ</div>
+    <div class="bar" aria-hidden="true"><i id="fill"></i></div><div class="meta"><span id="pos"></span><span>Баллы: <span id="score">0</span></span></div>
+  </header>
+  <main id="screen" aria-live="polite"></main>
+</div>
+
+<script>
+(function(){
+var PHOTO='data:image/jpeg;base64,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';
+var TG='https://t.me/RKICENTER';
+var SITE='https://lingvapolka.ru';
+var ROOT=document.getElementById('screen');
+var TOP=document.getElementById('top');
+var FILL=document.getElementById('fill');
+var SCORE=document.getElementById('score');
+var POS=document.getElementById('pos');
+var S={score:0,key:'fun'};
+
+var CLIPS=[
+ {q:'«Революционизировала преподавание и изучение драмы во всём мире».',c:'Creative New Zealand, 2011'},
+ {q:'«Она такая большая: ум большой, сердце большое, идеи большие».',c:'Акико Като, студентка из Японии'},
+ {q:'«Они рождаются в размышлении и расцветают в действии».',c:'Дороти Хитхоут о своих идеях'}
+];
+
+var TESTS={
+ fun:{
+  name:'Просто интересное',
+  list:[
+   {when:'Йоркшир · 1940',
+    q:'Ей почти 14 лет. Какая у неё первая работа?',
+    o:['Укротительница львов в цирке','Ткачиха на шерстяной фабрике в Йоркшире','Дегустатор йоркширского пудинга'],a:1,
+    h:'Овец в Йоркшире больше, чем студентов.',
+    f:'Летом 1940 года Дороти ушла из школы за месяц до 14-летия и встала к станку рядом с матерью. Проработала там около пяти лет. Девушка, которая не закончила школу, потом стала лектором университета и педагогом, которого читают по всему миру.'},
+   {when:'Бредфорд · 1945',
+    q:'Она уходит учиться в театральную школу. Что говорит ей хозяин фабрики?',
+    o:['«Только попробуй вернуться»','«Если не получится, три станка будут ждать тебя»','«Захвати мой чай»'],a:1,
+    h:'Запасной аэродром стоит прямо у станка.',
+    f:'По Википедии, учёбу в бредфордской Northern Theatre School оплатил хозяин фабрики Чарли Флетчер (другие источники описывают это иначе). О Хитхоут снял фильм BBC с названием Three Looms Waiting, «Три станка ждут».'},
+   {when:'Бредфорд · театральная школа',
+    q:'Что сказала ей преподавательница Эсме Чёрч?',
+    o:['«Вы будете великой Джульеттой»','«Вы очень талантливы, порой пугающе, но не того размера для своего возраста»','«Идите в бухгалтеры»'],a:1,
+    h:'Речь про размер, но не про одежду.',
+    f:'Эту фразу приводит Болтон (в Википедии). Некролог The Stage пишет, что Чёрч прямо развеяла её мечту стать актрисой. Сцена потеряла актрису, а мир получил педагога.'},
+   {when:'Детство',
+    q:'Как она в детстве ходила в школу?',
+    o:['Бегом, чтобы не опоздать','С раскрытой книгой перед носом','Верхом на осле'],a:1,
+    h:'Идти и читать одновременно умеют не все.',
+    f:'Так о ней вспоминают в некрологах. Семья была небогатой, а книги ей давала состоятельная соседка из своей домашней библиотеки. Отсюда любовь к чтению и самообразованию.'},
+   {when:'Дарем · около 1950',
+    q:'В каком возрасте она уже читала лекции в университете?',
+    o:['В 54 года','В 24 года','В 14 лет'],a:1,
+    h:'Чуть больше пяти лет после станка.',
+    f:'К 24 годам она стала лектором Даремского университета, в его ньюкаслском кампусе. Вчерашняя ткачиха учила взрослых. Так начался её путь от станка к кафедре.'},
+   {when:'Обычный день',
+    q:'Во сколько начинался её рабочий день?',
+    o:['В 4 утра, у плиты Aga, рядом с любимым котом','В 10 утра, после кофе','В полдень, после дождя'],a:0,
+    h:'Кот в этой истории главнее будильника.',
+    f:'Её дом был почти международным общежитием: в нём жила меняющаяся компания студентов из разных стран. Она готовила, возила их на занятия, а некоторые оставались на целый год. Обучение для неё не заканчивалось за дверью аудитории.'},
+   {when:'Её урок · Рождество',
+    q:'Школа готовит сцену про Вифлеем. Одни классы играют стражников, пастухов и хозяев гостиниц. Хитхоут берёт трёх мальчиков, которых считали трудными. Кем она их делает?',
+    o:['Волхвами-королями, которые идут за звездой','Пастухами, которые стерегут овец','Стражниками царя Ирода'],a:0,
+    h:'Тем, кому не доверяют, она выдаёт самую большую корону.',
+    f:'Сама Хитхоут шла рядом с ними слугой. По дороге мальчики писали завещания на случай, если не вернутся, торговались за нового верблюда и высматривали звезду. Именно задачи пути, а не костюмы, давали им силу, любопытство и серьёзность. В одном из интервью она говорила: «Они были королями-экспертами».'},
+   {when:'Корпоративный мир · 1991',
+    q:'Что сказал один из менеджеров Volkswagen Audi после её занятия?',
+    o:['«Это была трата времени»','«Я никогда не понимал, что каждое утро оставляю чувства дома»','«Пришлите презентацию»'],a:1,
+    h:'Про то, что остаётся дома вместе с тапочками.',
+    f:'Её программа для менеджеров называлась «Тонкий экран». Приёмы Хитхоут учили руководителей British Gas и Volkswagen, сотрудников NHS и Королевской прокуратуры: ролевая игра работает и со взрослыми.'}
+  ],
+  prize:{
+   t:'Если вам кажется, что вы всё узнаёте медленно, вы в хорошей компании. Вот что она говорила о себе:',
+   q:'«Я медленно учусь».',
+   c:'Дороти Хитхоут, доклад NATD, 2002'
+  }
+ },
+ pro:{
+  name:'Я преподаватель',
+  list:[
+   {when:'Йоркшир · лето 1940',
+    q:'Ей почти 14 лет. Что она делает?',
+    o:['Поступает в университет','Бросает школу и идёт ткачихой на шерстяную фабрику','Едет на пробы в театр'],a:1,
+    h:'Станок громче будильника.',
+    f:'Она работала рядом с матерью около пяти лет и думала, что останется там навсегда. Из такого начала получился путь к кафедре и к методу, по которому учатся педагоги во всём мире.'},
+   {when:'Бредфорд · 1945',
+    q:'Что пообещал хозяин фабрики, когда она уходила учиться?',
+    o:['Что три станка всегда будут ждать её','Что повысит зарплату','Что приедет на премьеру'],a:0,
+    h:'Так называется фильм BBC о ней.',
+    f:'По Википедии, учёбу в театральной школе в Бредфорде оплатил хозяин фабрики Чарли Флетчер (другие источники расходятся в деталях). О ней сняли фильм Three Looms Waiting, «Три станка ждут»; год в источниках называют по-разному: 1971 и 1974.'},
+   {when:'Бредфорд · театральная школа',
+    q:'Что сказала ей преподавательница Эсме Чёрч?',
+    o:['«Вы великая актриса»','«Вы очень талантливы, порой пугающе, но не того размера для своего возраста»','«Вам нужен другой город»'],a:1,
+    h:'Речь про размер, а не про талант.',
+    f:'Эту фразу приводит Болтон (в Википедии). Некролог The Stage пишет, что Чёрч прямо развеяла её мечту стать актрисой. Неудача стала началом педагогики.'},
+   {when:'Детство',
+    q:'Как она в детстве ходила в школу?',
+    o:['С раскрытой книгой перед носом','Босиком','Верхом на осле'],a:0,
+    h:'Дорога короткая, а книга длинная.',
+    f:'Так о ней вспоминают в некрологах. Книги ей давала состоятельная соседка из своей домашней библиотеки. Самообразование стало её первой «школой».'},
+   {when:'Дарем · около 1950',
+    q:'В каком возрасте она стала лектором университета?',
+    o:['В 54 года','В 24 года, Даремский университет, ньюкаслский кампус','В 14 лет'],a:1,
+    h:'Чуть больше пяти лет после станка.',
+    f:'Позже она переехала в Ньюкасл (1964) и преподавала там до 1986 года. В 24 года вчерашняя ткачиха уже учила взрослых.'},
+   {when:'Обычный день',
+    q:'Во сколько начинался её день и кто жил у неё дома?',
+    o:['В 10 утра, и никто','В 4 утра, у плиты Aga, рядом с котом; дом делили студенты из разных стран','В полдень; соседи'],a:1,
+    h:'Кот был главным по тишине.',
+    f:'Семья делила дом с меняющейся компанией студентов из страны и из-за границы. Хитхоут готовила, возила их на занятия, и некоторые оставались на целый год. Обучение для неё не заканчивалось за дверью аудитории.'},
+   {when:'Поворот · три озорника',
+    q:'Три мальчика, которых считали трудными, играют королей-волхвов в школьной рождественской сцене. Что Хитхоут вдруг поняла?',
+    o:['Что детям, у которых есть настоящая задача и ответственность эксперта, не нужны ни костюмы, ни актёрство','Что трудных мальчиков надо переводить в другой класс','Что рождественские сцены лучше убрать из школы'],a:0,
+    h:'Корона сама никого не меняет. Что-то другое.',
+    f:'К осени она осознала, что с самого Рождества нащупывала «точку зрения эксперта» интуитивно. Мальчики стали серьёзными не из-за короны, а из-за дел: высматривать звезду, писать завещания, торговаться. В одном из интервью она говорила: «Они были королями-экспертами». Отсюда выросла «мантия эксперта».'},
+   {when:'За пределами школы',
+    q:'Кого ещё учили приёмы Хитхоут, кроме детей?',
+    o:['Только актёров','Менеджеров British Gas и Volkswagen, сотрудников NHS и Королевской прокуратуры','Только музыкантов'],a:1,
+    h:'Деловые люди в ролях.',
+    f:'Её программа для менеджеров называлась «Тонкий экран» (1991). Один из участников сказал: «Я никогда не понимал, что каждое утро оставляю чувства дома».'},
+   {when:'Её урок · 1',
+    q:'Представьте урок: дети входят в класс и видят неподвижную фигуру в старинной одежде рядом с хирургическими инструментами. Задание: поговорить с ним о том, что его тревожит. Какой это урок?',
+    o:['«Садовники Грантли»','«Лечение доктора Листера»','«Путь волхвов»'],a:1,
+    h:'Дети в роли студентов-медиков перед экзаменом.',
+    f:'Пять дней, 1980 год. Когда «портрет оживал», он был встревоженным, и дети сами начинали его утешать. Потом они делали восковые фигуры «опасностей на работе» и планировали стерильную карету скорой помощи для Индии. Приём называется «учитель в роли».',
+    u:'Станьте героем текста и разрешите ученикам задавать вам вопросы.'},
+   {when:'Её урок · 2',
+    q:'Представьте урок: класс играет садоводов, пришедших в музей. На стене портрет женщины XIX века, а в дневниках намёки на семейную тайну. Какой это урок?',
+    o:['«Садовники Грантли»','«Охота за монстром колы»','«Музей Уотергейта»'],a:0,
+    h:'Портрет здесь умеет отвечать.',
+    f:'Хитхоут играла «портрет» и обращалась к нему: «Мария, принесёшь ли ты свой век в наш век?» По обрывкам дневника подростки сами нашли «запретный» участок сада у реки.',
+    u:'Фотография, предмет или картина «в роли» дают безопасного собеседника для вопросов.'},
+   {when:'Её урок · 3',
+    q:'Класс идёт за звездой в Вифлеем. Кем идёт с ним сама Хитхоут?',
+    o:['Звездочётом','Слугой','Верблюдом'],a:1,
+    h:'Слуга несёт чемодан и не командует.',
+    f:'Роль слуги позволяла помогать, не командуя. Дети писали завещания на случай, если не вернутся, торговались за верблюда, и каждая задача пути давала им власть над ситуацией.',
+    u:'Не «играйте роль», а дайте ученикам задачи: что взять, что продать, на что обменять.'},
+   {when:'Её урок · 4',
+    q:'Класс ведёт обувную фабрику с историей с 1868 года. Приходят заказы: туфли для слонов из фильма про Ганнибала, упряжь для восьми хаски. Для кого сто пар туфель из зелёного шёлка?',
+    o:['Для невесты','Для эльфов из балета','Для королевской гвардии'],a:1,
+    h:'Сказочные существа носят зелёное.',
+    f:'Хитхоут приходила на фабрику «бухгалтером из банка, миссис Хитхоут» проверять расходы, и рабочие сопротивлялись. Роль неприятного гостя оживляла урок и добавляла напряжения.',
+    u:'«Предприятие» с заказами, клиентами и письмами даёт целую деловую лексику.'},
+   {when:'Главный принцип',
+    q:'Класс принимает «мантию эксперта». Кем становится учитель?',
+    o:['Строгим экзаменатором','Зрителем на последней парте','Помощником в общем деле'],a:2,
+    h:'Голос у него другой: не «я знаю, а вы нет».',
+    f:'Учитель никогда не говорит голосом эксперта-инструктора, а вне мантии работает как помощник в успехе общего дела (доклад 2002 года). Главное в мантии, по её словам, «клиент»: тот, перед кем и за кого отвечаешь. «Отсюда этика, ответственность, мораль» (2009).',
+    u:'Вместо «сегодня играем сценку» попробуйте: «к нам пришло письмо, нужна помощь».'}
+  ],
+  prize:{
+   t:'Три приёма на завтрашний урок: дайте классу общее дело и «клиента»; войдите в роль портрета или слуги, чтобы подсказывать, а не командовать; придумайте «предприятие» с заказами. А напоследок её слова для учителей:',
+   q:'«Берите свою жизнь с собой в класс. Всё, что вы знаете, пригодится».',
+   c:'Дороти Хитхоут, 2007 (цитата по статье в ArtsPraxis)'
+  }
+ }
+};
+
+var COLORS=[3,4,5,2,1];
+var OK=['Верно!','В точку!','Именно так!','Отлично!'];
+
+function $(s,r){return (r||document).querySelector(s)}
+function $$(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))}
+function paint(n){document.body.setAttribute('data-lv',String(n))}
+function add(n){S.score+=n;SCORE.textContent=S.score}
+function put(html){
+  ROOT.innerHTML=html;
+  var h=ROOT.querySelector('h1,h2');
+  if(h){h.setAttribute('tabindex','-1');try{h.focus({preventScroll:true})}catch(e){}}
+  try{window.scrollTo(0,0)}catch(e){}
+}
+function lc(t){return t.charAt(0)==='«'?t:t.charAt(0).toLowerCase()+t.slice(1)}
+function shuffle(n){
+  var a=[],i,j,t;for(i=0;i<n;i++)a.push(i);
+  for(i=n-1;i>0;i--){j=Math.floor(Math.random()*(i+1));t=a[i];a[i]=a[j];a[j]=t}
+  return a;
+}
+function mot(i,n){
+  if(n-i===1)return 'Последний вопрос. Вы почти у цели!';
+  if(i===0)return 'Поехали! Ошибаться не страшно: после каждого ответа вас ждёт настоящий факт.';
+  if(i/n<0.4)return 'Хороший темп: впереди ещё много интересного.';
+  if(i/n<0.7)return 'Больше половины позади. Дальше самое вкусное!';
+  return 'Финиш уже виден, держитесь!';
+}
+
+/* ---------- Счётчик прошедших (бесплатный сервис Abacus, работает и на GitHub Pages) ---------- */
+var ABACUS='https://abacus.jasoncameron.dev';
+var NS='lingvapolka-heathcote-9f3a2c';
+var MIN_SHOW=10;
+function who(n){var a=n%100,b=n%10;return (b>=2&&b<=4&&!(a>=12&&a<=14))?'человека':'человек'}
+function paintCount(total){
+  var el=document.getElementById('cnt');
+  if(!el||typeof total!=='number'||total<MIN_SHOW)return;
+  el.textContent='Тест уже прошли: '+total.toLocaleString('ru-RU')+' '+who(total);
+  el.hidden=false;
+}
+function one(act,key){
+  return fetch(ABACUS+'/'+act+'/'+NS+'/'+key+'-done',{cache:'no-store'})
+    .then(function(r){return r.ok?r.json():{value:0}})
+    .then(function(d){return typeof d.value==='number'?d.value:0})
+    .catch(function(){return -1});
+}
+function loadCount(){
+  if(!window.fetch||!window.Promise)return;
+  Promise.all([one('get','fun'),one('get','pro')]).then(function(v){
+    if(v[0]<0||v[1]<0)return;
+    paintCount(v[0]+v[1]);
+  });
+}
+function reportDone(key){
+  if(!window.fetch||!window.Promise)return;
+  var k='hh_done_'+key,seen=false;
+  try{seen=!!localStorage.getItem(k)}catch(e){}
+  if(seen){loadCount();return}
+  one('hit',key).then(function(v){
+    if(v<0)return;
+    try{localStorage.setItem(k,'1')}catch(e){}
+    loadCount();
+  });
+}
+
+/* ---------- Слайд 1 ---------- */
+function intro(){
+  S.score=0;SCORE.textContent='0';TOP.hidden=true;paint(0);
+  put('<section class="card">'+
+    '<div class="hero">'+
+      '<div class="polaroid"><img alt="Портрет улыбающейся пожилой женщины с седыми волосами" src="'+PHOTO+'"><div class="cap">Дороти Хитхоут<br>1926–2011</div></div>'+
+      '<div style="display:flex;flex-direction:column;gap:14px;min-width:0">'+
+        '<p class="eyebrow">Легенда педагогики</p>'+
+        '<h1>Дороти Хитхоут</h1>'+
+        '<p class="lead">Пять лет она ткала на шерстяной фабрике. Потом изменила то, как учат: от школьных классов до залов, где её слушали менеджеры British Gas, Volkswagen и Королевской прокуратуры.</p>'+
+      '</div>'+
+    '</div>'+
+    '<div class="tiles">'+
+      '<div class="tile"><b>5</b><span>лет на ткацкой фабрике</span></div>'+
+      '<div class="tile"><b>35</b><span>лет преподавала в университете</span></div>'+
+      '<div class="tile"><b>100</b><span>лет со дня рождения в 2026-м</span></div>'+
+    '</div>'+
+    '<button class="btn" id="go">Что о ней говорили</button>'+
+  '</section>');
+  $('#go').onclick=clips;
+}
+
+/* ---------- Слайд 2: вырезки и выбор теста ---------- */
+function clips(){
+  TOP.hidden=true;paint(2);
+  var n1=TESTS.fun.list.length,n2=TESTS.pro.list.length;
+  put('<section class="card">'+
+    '<p class="eyebrow">Вырезки</p>'+
+    '<h2>Что о ней писали и говорили</h2>'+
+    '<div class="clips">'+CLIPS.map(function(c){
+      return '<figure class="clip"><q>'+c.q+'</q><figcaption><cite>'+c.c+'</cite></figcaption></figure>';
+    }).join('')+'</div>'+
+    '<p class="src" style="color:var(--ink)">Цитаты даны в нашем переводе, источники указаны в конце.</p>'+
+    '<h3 class="choose">Выберите тест</h3>'+
+    '<div class="picks">'+
+      '<button class="pick p1" data-t="fun"><b>Просто интересное</b><span>'+n1+' вопросов. Лёгкие, смешные, с удивительными фактами о её жизни.</span></button>'+
+      '<button class="pick p2" data-t="pro"><b>Я преподаватель</b><span>'+n2+' вопросов. Биография, реальные уроки и приёмы для вашего класса.</span></button>'+
+    '</div>'+
+    '<p class="cnt" id="cnt" hidden></p>'+
+  '</section>');
+  $$('.pick').forEach(function(b){b.onclick=function(){begin(b.getAttribute('data-t'))}});
+  loadCount();
+}
+
+function begin(key){
+  S.key=key;S.score=0;SCORE.textContent='0';
+  quiz(0);
+}
+
+/* ---------- Вопросы ---------- */
+function quiz(i){
+  var T=TESTS[S.key],n=T.list.length,m=T.list[i],last=i===n-1;
+  TOP.hidden=false;
+  FILL.style.width=Math.round((i+1)/(n+1)*100)+'%';
+  POS.textContent='Вопрос '+(i+1)+' из '+n;
+  paint(COLORS[i%COLORS.length]);
+  var ord=shuffle(m.o.length);
+  put('<section class="card">'+
+    '<p class="when">'+m.when+'</p>'+
+    '<p class="mot">'+mot(i,n)+'</p>'+
+    '<h2>'+m.q+'</h2>'+
+    '<div class="opts">'+ord.map(function(k){return '<button class="opt" data-k="'+k+'">'+m.o[k]+'</button>'}).join('')+'</div>'+
+    '<div><button class="btn ghost" id="hb">Нужна подсказка?</button></div>'+
+    '<div id="hint" class="hint" hidden><b>Подсказка</b>'+m.h+'</div>'+
+    '<div id="fb" class="fb" hidden></div></section>');
+  $('#hb').onclick=function(){$('#hint').hidden=false;$('#hb').hidden=true};
+  $$('.opt').forEach(function(b){
+    b.onclick=function(){
+      var k=+b.getAttribute('data-k'),ok=k===m.a;
+      $$('.opt').forEach(function(x){x.disabled=true;if(+x.getAttribute('data-k')===m.a)x.classList.add('right')});
+      if(!ok)b.classList.add('wrong');
+      if(ok)add(1);
+      $('#hb').hidden=true;
+      var fb=$('#fb');fb.hidden=false;
+      fb.innerHTML='<p><strong>'+(ok?OK[i%OK.length]:'Не совсем.')+'</strong>'+(ok?'':' Правильный ответ: '+lc(m.o[m.a])+'.')+'</p>'+
+        '<div class="fact"><b>Что дальше</b>'+m.f+'</div>'+
+        (m.u?'<div class="use"><b>Для урока РКИ</b>'+m.u+'</div>':'')+
+        '<button class="btn" id="nx">'+(last?'Узнать результат':'Дальше (осталось '+(n-i-1)+')')+'</button>';
+      $('#nx').onclick=function(){last?finale():quiz(i+1)};
+      $('#nx').focus();
+    };
+  });
+}
+
+/* ---------- Финал ---------- */
+function finale(){
+  var T=TESTS[S.key],n=T.list.length,s=S.score,r=s/n;
+  TOP.hidden=false;FILL.style.width='100%';POS.textContent='Готово';paint(0);
+  var title=r>=0.85?'Эксперт с мантией':(r>=0.5?'Опытный сотрудник бюро':'Стажёр бюро');
+  var praise=r>=0.85?'Блестяще! Теперь вы можете сами рассказывать о Хитхоут.':(r>=0.5?'Отличный результат: вы уже знаете о ней главное.':'Каждая ошибка принесла вам новый факт, а так она и учила: через задачи.');
+  var other=S.key==='fun'?'pro':'fun';
+  var txt='Я прошёл(а) тест «'+T.name+'» о Дороти Хитхоут и набрал(а) '+s+' из '+n+': '+title+'. Узнать больше о ней и о методике РКИ: '+SITE;
+  put('<section class="card">'+
+    '<p class="eyebrow">Диплом бюро</p>'+
+    '<h2>Вы прошли весь тест</h2>'+
+    '<div class="big-score">'+s+'<small> из '+n+'</small></div>'+
+    '<div class="title-badge">'+title+'</div>'+
+    '<p class="praise">'+praise+'</p>'+
+    '<div class="fact"><b>Напоследок</b>'+T.prize.t+'</div>'+
+    '<blockquote class="quote">'+T.prize.q+'<cite>'+T.prize.c+'</cite></blockquote>'+
+    '<div class="promo">'+
+      '<h3>Проект «Лингва-полка»</h3>'+
+      '<p>Игры и онлайн-курс для преподавателей русского как иностранного. Следующий поток курса стартует 24 октября.</p>'+
+      '<div class="row"><a class="btn" href="'+TG+'" target="_blank" rel="noopener">Подписаться на Telegram</a><a class="btn alt" href="'+SITE+'" target="_blank" rel="noopener">lingvapolka.ru</a></div>'+
+    '</div>'+
+    '<div class="row"><button class="btn ghost" id="cp">Скопировать результат</button><button class="btn ghost" id="other">Пройти тест «'+TESTS[other].name+'»</button><button class="btn ghost" id="again">Ещё раз</button></div>'+
+    '<textarea class="share" id="share" readonly aria-label="Текст для публикации" hidden>'+txt+'</textarea>'+
+    '<p class="src" id="cpmsg" role="status"></p>'+
+    '<p class="cnt" id="cnt" hidden></p>'+
+    '<p class="src">Источники: Heathcote D., Bolton G. Drama for Learning, 1995; Heathcote D., Contexts for Active Learning (NATD, 2002); National Drama; ArtsPraxis 13(1); некрологи Times Educational Supplement и The Stage; Creative New Zealand; Википедия; CODE; Drama Resource; Unfinished Histories.</p>'+
+  '</section>');
+  $('#again').onclick=function(){begin(S.key)};
+  reportDone(S.key);
+  $('#other').onclick=function(){begin(other)};
+  $('#cp').onclick=function(){
+    var ta=$('#share'),msg=$('#cpmsg');
+    function fallback(){ta.hidden=false;ta.focus();ta.select();msg.textContent='Текст выделен: скопируйте его вручную.'}
+    try{navigator.clipboard.writeText(txt).then(function(){msg.textContent='Скопировано.'},fallback)}catch(e){fallback()}
+  };
+}
+
+intro();
+})();
+</script>
+</body>
+</html>
